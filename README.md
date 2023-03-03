@@ -1,1 +1,1 @@
-# TSC_GNN
+# CaLoNet
