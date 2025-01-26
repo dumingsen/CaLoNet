@@ -15,6 +15,8 @@ Get MTS datasets in http://timeseriesclassification.com/dataset.php.
 ```bash
 run: python run_UEA.py
 ```
+## Get ariv version
+https://arxiv.org/abs/2411.18008
 
 ## Acknowledgements
 This work was supported by the Innovation Methods Work Special Project under Grant 2020IM020100, and the Natural Science Foundation of Shandong Province under Grant ZR2020QF112.
