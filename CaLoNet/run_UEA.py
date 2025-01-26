@@ -16,22 +16,21 @@ from model.layer import *
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 length = 1536 * 2
 writer = SummaryWriter('runs/exp')
-# 实例化这个类，然后我们就得到了Dataset类型的数据，记下来就将这个类传给DataLoader，就可以了。
 
 parser = argparse.ArgumentParser(description='MF-Net for MTSC')
 ###===================================================================================
 parser.add_argument('--data', type=str, default='./data/solar_AL.txt',
-                    help='location of the data file')###数据集
+                    help='location of the data file')
 parser.add_argument('--log_interval', type=int, default=2000, metavar='N',
                     help='report interval')
 parser.add_argument('--save', type=str, default='model/model.pt',
                     help='path to save the final model')
 parser.add_argument('--optim', type=str, default='adam')
 parser.add_argument('--L1Loss', type=bool, default=True)
-parser.add_argument('--normalize', type=int, default=2)###？？？
+parser.add_argument('--normalize', type=int, default=2)
 #parser.add_argument('--device',type=str,default='cuda:1',help='')
-parser.add_argument('--gcn_true', type=bool, default=True, help='whether to add graph convolution layer')##是否构造图卷积层
-parser.add_argument('--buildA_true', type=bool, default=True, help='whether to construct adaptive adjacency matrix')#邻接矩阵
+parser.add_argument('--gcn_true', type=bool, default=True, help='whether to add graph convolution layer')
+parser.add_argument('--buildA_true', type=bool, default=True, help='whether to construct adaptive adjacency matrix')
 parser.add_argument('--gcn_depth',type=int,default=2,help='graph convolution depth')
 parser.add_argument('--num_nodes',type=int,default=2,help='number of nodes/variables')#对应样本条数
 parser.add_argument('--dropout',type=float,default=50,help='dropout rate')
@@ -44,13 +43,13 @@ parser.add_argument('--residual_channels',type=int,default=16,help='residual cha
 parser.add_argument('--skip_channels',type=int,default=32,help='skip channels')
 parser.add_argument('--end_channels',type=int,default=64,help='end channels')
 
-parser.add_argument('--in_dim',type=int,default=1,help='inputs dimension')#输入维度
-parser.add_argument('--seq_in_len',type=int,default=640,help='input sequence length')###输入序列长度，1234
+parser.add_argument('--in_dim',type=int,default=1,help='inputs dimension')
+parser.add_argument('--seq_in_len',type=int,default=640,help='input sequence length')
 parser.add_argument('--seq_out_len',type=int,default=1,help='output sequence length')#
-parser.add_argument('--horizon', type=int, default=3)###？？？
+parser.add_argument('--horizon', type=int, default=3)
 parser.add_argument('--layers',type=int,default=5,help='number of layers')
 
-#parser.add_argument('--batch_size',type=int,default=32,help='batch size')###batch
+#parser.add_argument('--batch_size',type=int,default=32,help='batch size')
 parser.add_argument('--lr',type=float,default=0.0001,help='learning rate')
 parser.add_argument('--weight_decay',type=float,default=0.00001,help='weight decay rate')
 
@@ -68,13 +67,13 @@ parser.add_argument('--model', type=str, default='MF-Net')
 parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu')
 parser.add_argument('--length', type=int, default=8192, help='Embedding length')
 parser.add_argument('--writer_path', type=str, default='runs/exp', help='TensorBoard path')
-parser.add_argument('--data_path', type=str, default='G:\桌面\Multivariate2018_arff\Multivariate_arff')#G:\桌面\Multivariate2018_arff\Multivariate_arff ./data
+parser.add_argument('--data_path', type=str, default='G:\桌面\Multivariate2018_arff\Multivariate_arff')
 parser.add_argument('--seed', type=int, default=1, help='random seed')
 #parser.add_argument('--dropout', type=float, default=0.05, help='attention dropout rate')
-parser.add_argument('--batch_size', type=int, default=4)#设置batch_size的目的让模型在训练过程中每次选择批量的数据来进行处理
+parser.add_argument('--batch_size', type=int, default=4)
 parser.add_argument('--n_epochs', type=int, default=50)
 parser.add_argument('--cache_path', type=str, default='./cache')
-parser.add_argument('--window', type=int, default=64)  # [32,48,64,80,96]
+parser.add_argument('--window', type=int, default=64) 
 parser.add_argument('--M_name', type=str, default='ME')
 
 args = parser.parse_args()
@@ -87,8 +86,8 @@ def GetDataAndNet(archive_path, archive_name, wa, prob, mask=1):
     train_loader, test_loader, num_class = load_UEA(archive, args)##trainloader,
     #input()
     # get the length and channel of time series
-    time_stmp = train_loader.__iter__().__next__()[0].shape[2]#长度
-    in_channel = train_loader.__iter__().__next__()[0].shape[1]#多元时间序列 next()
+    time_stmp = train_loader.__iter__().__next__()[0].shape[2]
+    in_channel = train_loader.__iter__().__next__()[0].shape[1]
     # num_class = DealDataset(train_path).num_class()
 
 #=========================================================
@@ -101,20 +100,20 @@ def GetDataAndNet(archive_path, archive_name, wa, prob, mask=1):
 
                   seq_length=args.seq_in_len, in_dim=args.in_dim, out_dim=args.seq_out_len,
                   layers=args.layers, propalpha=args.propalpha, tanhalpha=args.tanhalpha, layer_norm_affline=False,
-                #  ,t=time_stmp,#时间序列长度
+                #  ,t=time_stmp,
                 #   num_classes=num_class,
                 #   channels=in_channel,
                 # hidden_dim = (96, 192, 62),
-                t = time_stmp,  # 长度
-                down_dim = length,  # length = 1536 * 2，降维维度
+                t = time_stmp,  
+                down_dim = length,  
                 hidden_dim = (96,192),##(96, 192, 62)
                 layers1 = (2, 2, 6, 2),
                 heads=(3, 6, 12, 24),
                 channels=in_channel,
                 num_classes=num_class,
                 head_dim=32,
-                window_size=args.window,#768
-                downscaling_factors=(4, 2, 2, 2),  # 代表多长的时间作为一个特征
+                window_size=args.window,
+                downscaling_factors=(4, 2, 2, 2), 
                 relative_pos_embedding=True,
                 wa=wa,
                 prob=prob,
@@ -128,7 +127,7 @@ def GetDataAndNet(archive_path, archive_name, wa, prob, mask=1):
     if torch.cuda.device_count() > 1:
         print("Let's use", torch.cuda.device_count(), "GPUs!")
         # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
-        net = torch.nn.DataParallel(net)##多gpu训练
+        net = torch.nn.DataParallel(net)
     return train_loader, test_loader, net, num_class
 
 
@@ -147,14 +146,14 @@ def test(epoch):
         y = Variable(y).to(device)
         net.eval()
         start_time = time.time()
-        #embedding, encoder, output, pred_y = net(x)#需要修改
+        #embedding, encoder, output, pred_y = net(x)
 
         _,_,pred_y = net(x,z)
         pred_y = torch.squeeze(pred_y,dim=1)
         inference_time = time.time() - start_time
 
         _, y_pred = torch.max(pred_y, -1)
-        total_test_acc += (y_pred.cpu() == y.cpu()).sum().item()#所以我们在求loss或者accuracy时，一般使用item()，而不是直接取它对应的元素x[1,1]。
+        total_test_acc += (y_pred.cpu() == y.cpu()).sum().item()
 
         total_pred = torch.cat([total_pred, y_pred], dim=0)
         total_true = torch.cat([total_true, y], dim=0)
@@ -208,19 +207,16 @@ def train(optimizer):
             #添加unsqueeze增加维度
             x = torch.unsqueeze(x, dim=1)
 
-            #Varibale包含三个属性：
-            # data：存储了Tensor，是本体的数据
-            # grad：保存了data的梯度，本事是个Variable而非Tensor，与data形状一致
-            # grad_fn：指向Function对象，用于反向传播的梯度计算之用
+            
             x = Variable(x).float().to(device)
             print('trainx',x.shape)#[16,144,62]/[16, 1, 144, 62]#[16, 1, 9, 144]
             z = Variable(z).float().to(device)
-            y = Variable(y).to(device)#[16]
+            y = Variable(y).to(device)
             print('z',z.shape)
-            # output 我们需要的 all_sample
+          
             _,_,pred_y = net(x,z)
             print('pred_y',pred_y.shape)#[16,2]/torch.Size([16, 1, 2])
-            #embedding, encoder, output, pred_y = net(x)##模型流入参数
+            #embedding, encoder, output, pred_y = net(x)
 
             pred_y = torch.squeeze(pred_y,dim=1)  ###
             print('pred_y',pred_y.shape)
@@ -252,17 +248,17 @@ def train(optimizer):
 
         #np.savetxt("test.csv",total_train_acc / train_loader.dataset.__len__())
 
-        #训练数据
+     
         plot_train_loss.append(loss.cpu().detach())
         plot_train_acc.append(total_train_acc / train_loader.dataset.__len__())
 
-        #==================================================================================================####测试开始
-        # print("Total time elapsed: {:.4f}s".format(train_time))
+
+  
         total_test_acc, f1_score, precision, recall, inference_time, test_loss = test(epoch)
         plot_test_loss.append(test_loss.cpu().detach())
         plot_test_acc.append(total_test_acc / test_loader.dataset.__len__())
 
-        # save model
+
         if os.path.exists(f'saved_model/{archive}') == False:#M_name
             os.makedirs(f'saved_model/{archive}')
 
@@ -278,12 +274,12 @@ def train(optimizer):
               'time: {:.4f}s'.format(time.time() - s_time))
 
         #plt.plot()
-    train_time=time.time() - now1#总运行时间
+    train_time=time.time() - now1
     #now = time.localtime()
-    nowt = time.strftime("%Y-%m-%d-%H_%M_%S", now)  # 实验开始的时间，这一步就是对时间进行格式化
+    nowt = time.strftime("%Y-%m-%d-%H_%M_%S", now)  
     #print(nowt)
 
-    if os.path.exists(f'acc&loss/{archive}') == False:  # M_name
+    if os.path.exists(f'acc&loss/{archive}') == False:  
         os.makedirs(f'acc&loss/{archive}')
 
     plt.plot(range(len(plot_train_loss)), plot_train_loss, label='train_loss')
@@ -320,29 +316,7 @@ wa=1
 prob=1
 if __name__ == '__main__':
 
-    # archives = glob.glob(r'D:/FTP/chengrj/time_series/data/Multivariate_arff/*')
-    # for archive_path in archives:
-    # archive = os.path.split(archive_path)[-1]
-
-    #ArticularyWordRecognition
-    # FaceDetection
-    # AtrialFibrillation 单独使用spatial 10epo左右较好
-    # BasicMotions 使用了加权拼接
-    #CharacterTrajectoriesz最后一层加上了LN
-    #Cricket ，开题的模型很合适0.944444
-    #DuckDuckGeese
-    #EigenWorms
-    #Epilepsy
-    #HandMovementDirection
-    #Heartbeat
-    #MotorImagery
-    #NATOPS
-    #PhonemeSpectra
-    #PenDigits
-    #SelfRegulationSCP2#50次不够
-    #SpokenArabicDigits
-    #StandWalkJump 可以跑30次或50以上printt
-    #PEMS-SF
+    
     archive = 'BasicMotions'##数据集 1234
     # archive = 'PEMS-SF'
     printt(archive)
@@ -380,16 +354,5 @@ if __name__ == '__main__':
 
 
 
-# plt.plot(range(len(plot_train_loss)),plot_train_loss,label='train_loss')
-# plt.xlabel('iteration')
-# plt.ylabel('loss')
-# plt.legend()
-# plt.show()
 
-# plt.plot(range(len(plot_train_acc)),plot_train_acc,label='train_acc')
-# plt.plot(range(len(plot_test_acc)),plot_test_acc,label='test_acc')
-# plt.xlabel('iteration')
-# plt.ylabel('acc')
-# plt.legend()
-# plt.show()
 
