@@ -19,7 +19,7 @@ class CyclicShift(nn.Module):
         self.displacement = displacement
 
     def forward(self, x):
-        return torch.roll(x, shifts=self.displacement, dims=1)#沿给定维数滚动张量，移动到最后一个位置以外的元素将在第一个位置重新引入
+        return torch.roll(x, shifts=self.displacement, dims=1)
 
 
 class Residual(nn.Module):
