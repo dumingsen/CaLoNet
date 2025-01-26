@@ -1,5 +1,4 @@
 from model.layer import *
-
 import torch
 import torch.nn as nn
 from model.attention import *
